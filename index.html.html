@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Trámites · La Calera</title>
+<style>
+  :root{
+    --verde:#00913F;
+    --verde-oscuro2:#006b2f;
+    --verde-claro:#e6f4ec;
+    --verde-claro2:#f2f9f4;
+    --negro:#1c1f1d;
+    --gris-txt:#5c635f;
+    --gris-bg:#f5f7f5;
+    --gris-borde:#dfe5e1;
+    --blanco:#ffffff;
+    --ambar:#b8790a;
+    --ambar-bg:#fbf1de;
+    --verde-txt:#0d6b34;
+    --rojo:#b3362c;
+    --rojo-bg:#fbebe9;
+    --sombra: 0 1px 2px rgba(20,30,24,0.06), 0 1px 8px rgba(20,30,24,0.04);
+    --radio: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--gris-bg);
+    color:var(--negro);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:Georgia,"Times New Roman",serif;
+    margin:0 0 4px 0;
+    color:var(--negro);
+    letter-spacing:0.2px;
+  }
+  .app{max-width:1080px;margin:0 auto;padding:0 18px 60px;}
+  /* ===== Header (alto impacto) ===== */
+  .topbar{
+    background:linear-gradient(135deg,var(--verde) 0%,var(--verde-oscuro2) 100%);
+    border-bottom:none;
+    padding:26px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+    box-shadow:0 4px 18px rgba(0,0,0,.15);
+  }
+  .brand{display:flex;align-items:center;gap:22px;}
+  .brand img{height:52px;display:block;filter:brightness(0) invert(1);flex-shrink:0;margin-right:22px;}
+  .brand-text{display:flex;flex-direction:column;}
+  .brand-text .eyebrow{
+    font-size:14px;letter-spacing:1.6px;text-transform:uppercase;
+    color:#ffffff;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.15);
+  }
+  .brand-text .title{font-family:Georgia,serif;font-size:22px;font-weight:700;color:#ffffff;margin-top:2px;}
+  .tabs{display:flex;gap:6px;background:rgba(255,255,255,.16);padding:5px;border-radius:999px;}
+  .tab-btn{
+    border:none;background:transparent;padding:10px 20px;border-radius:999px;
+    font-size:14.5px;font-weight:700;color:#ffffff;cursor:pointer;
+    transition:all .15s ease;
+    opacity:.85;
+  }
+  .tab-btn.active{background:#ffffff;color:var(--verde-oscuro2);box-shadow:var(--sombra);opacity:1;}
+  .tab-btn:not(.active):hover{color:#fff;opacity:1;}
+
+  /* ===== Layout helpers ===== */
+  .view{display:none;padding-top:26px;}
+  .view.active{display:block;}
+  .card{
+    background:var(--blanco);
+    border:1px solid var(--gris-borde);
+    border-radius:var(--radio);
+    padding:22px;
+    box-shadow:var(--sombra);
+    margin-bottom:20px;
+  }
+  .card h2{font-size:19px;}
+  .subtitle{color:var(--gris-txt);font-size:13.5px;margin-bottom:16px;}
+  .pill{
+    display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;
+    letter-spacing:.3px;text-transform:uppercase;
+  }
+  .pill-pendiente{background:var(--ambar-bg);color:var(--ambar);}
+  .pill-aprobado{background:var(--verde-claro);color:var(--verde-txt);}
+  .pill-rechazado{background:var(--rojo-bg);color:var(--rojo);}
+
+  /* ===== Buscador colaborador ===== */
+  .search-row{display:flex;gap:10px;flex-wrap:wrap;}
+  input[type=text], input[type=number], input[type=date], select, textarea{
+    font-family:inherit;font-size:14.5px;padding:10px 12px;
+    border:1.5px solid var(--gris-borde);border-radius:8px;
+    background:#fff;color:var(--negro);width:100%;
+  }
+  input[type=file]{
+    font-family:inherit;font-size:13.5px;padding:9px 10px;
+    border:1.5px dashed var(--gris-borde);border-radius:8px;
+    background:#fafbfa;color:var(--gris-txt);width:100%;
+  }
+  input[type=file]:focus{outline:none;border-color:var(--verde);}
+  input:focus, select:focus, textarea:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px var(--verde-claro);}
+  .search-row input{flex:1;min-width:220px;}
+  .search-results{margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid var(--gris-borde);display:none;}
+  .search-results.show{display:block;}
+  .search-item{
+    padding:11px 14px;border-bottom:1px solid var(--gris-borde);cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;background:#fff;
+    transition:background .1s;
+  }
+  .search-item:last-child{border-bottom:none;}
+  .search-item:hover{background:var(--verde-claro2);}
+  .search-item .nom{font-weight:600;font-size:14px;}
+  .search-item .meta{font-size:12px;color:var(--gris-txt);}
+  .search-item .dni{font-size:12px;color:var(--gris-txt);font-variant-numeric:tabular-nums;}
+
+  .empleado-card{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    background:var(--verde-claro2);border:1px solid var(--verde-claro);border-radius:10px;padding:16px 18px;
+  }
+  .empleado-info .nombre{font-weight:700;font-size:22px;margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px;}
+  .empleado-info .cargo{font-size:11.5px;color:var(--verde-txt);font-weight:600;margin-bottom:6px;text-transform:capitalize;}
+  .empleado-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 22px;font-size:13px;color:var(--gris-txt);}
+  .empleado-grid b{color:var(--negro);font-weight:600;}
+  .link-btn{background:none;border:none;color:var(--verde-txt);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:4px;}
+
+  /* ===== Selector de trámite ===== */
+  .tramite-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+  .tramite-card{
+    border:1.5px solid var(--gris-borde);border-radius:10px;padding:16px;cursor:pointer;
+    background:#fff;transition:all .15s ease;text-align:left;
+  }
+  .tramite-card:hover{border-color:var(--verde);transform:translateY(-2px);box-shadow:var(--sombra);}
+  .tramite-card.selected{border-color:var(--verde);background:var(--verde-claro2);box-shadow:0 0 0 3px var(--verde-claro);}
+  .tramite-card .icon{color:var(--verde);margin-bottom:10px;}
+  .tramite-card .nom{font-weight:700;font-size:14.5px;margin-bottom:3px;}
+  .tramite-card .desc{font-size:12px;color:var(--gris-txt);}
+
+  /* ===== Formulario ===== */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid.full, .field.full{grid-column:1/-1;}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--negro);margin-bottom:5px;}
+  .field .hint{font-size:11.5px;color:var(--gris-txt);margin-top:4px;}
+  .radio-group{display:flex;gap:16px;flex-wrap:wrap;padding-top:4px;}
+  .radio-group label{display:flex;align-items:center;gap:6px;font-weight:500;font-size:13.5px;color:var(--negro);}
+  .radio-group input{width:auto;}
+
+  .sig-box{border:1.5px dashed var(--gris-borde);border-radius:10px;padding:10px;background:#fbfcfb;}
+  canvas#sigPad{width:100%;height:150px;border-radius:8px;background:#fff;border:1px solid var(--gris-borde);touch-action:none;cursor:crosshair;display:block;}
+  .sig-actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .sig-actions span{font-size:12px;color:var(--gris-txt);}
+
+  .btn{
+    border:none;border-radius:8px;padding:11px 22px;font-weight:700;font-size:14px;cursor:pointer;
+    transition:all .15s ease;font-family:inherit;
+  }
+  .btn-primary{background:var(--verde);color:#fff;}
+  .btn-primary:hover{background:var(--verde-oscuro2);}
+  .btn-primary:disabled{background:#a9c9b6;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--gris-txt);border:1.5px solid var(--gris-borde);}
+  .btn-ghost:hover{border-color:var(--verde);color:var(--verde-txt);}
+  .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:6px;}
+  .btn-danger-ghost{background:transparent;color:var(--rojo);border:1.5px solid var(--rojo-bg);}
+  .btn-danger-ghost:hover{background:var(--rojo-bg);}
+  .btn-ok-ghost{background:transparent;color:var(--verde-txt);border:1.5px solid var(--verde-claro);}
+  .btn-ok-ghost:hover{background:var(--verde-claro);}
+
+  .checkbox-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--gris-txt);margin-top:6px;}
+  .checkbox-row input{width:auto;margin-top:3px;}
+
+  /* ===== Confirmacion ===== */
+  .confirm-box{text-align:center;padding:40px 20px;}
+  .confirm-box .check{
+    width:64px;height:64px;border-radius:50%;background:var(--verde-claro);color:var(--verde);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 18px;
+  }
+  .folio{
+    display:inline-block;margin-top:10px;background:var(--negro);color:#fff;padding:8px 18px;
+    border-radius:8px;font-family:monospace;font-size:15px;letter-spacing:1px;
+  }
+
+  /* ===== Admin ===== */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+  .stat-card{background:#fff;border:1px solid var(--gris-borde);border-radius:10px;padding:16px;box-shadow:var(--sombra);}
+  .stat-card .num{font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--verde-txt);}
+  .stat-card .lbl{font-size:12px;color:var(--gris-txt);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+  .filters-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .filters-row select, .filters-row input{width:auto;min-width:150px;}
+  .filters-row input[type=text]{flex:1;min-width:200px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--gris-txt);
+    padding:9px 10px;border-bottom:2px solid var(--gris-borde);
+  }
+  tbody td{padding:11px 10px;border-bottom:1px solid var(--gris-borde);vertical-align:middle;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:var(--verde-claro2);}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--gris-txt);}
+  .empty-state svg{color:var(--gris-borde);margin-bottom:12px;}
+
+  /* ===== Modal ===== */
+  .overlay{
+    display:none;position:fixed;inset:0;background:rgba(20,25,22,.5);
+    align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .overlay.show{display:flex;}
+  .modal{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);}
+  .modal-head{
+    display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px;border-bottom:1px solid var(--gris-borde);
+    position:sticky;top:0;background:#fff;
+  }
+  .modal-body{padding:20px 22px;}
+  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gris-txt);line-height:1;padding:2px 6px;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:18px;}
+  .detail-item .k{font-size:11.5px;color:var(--gris-txt);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:2px;}
+  .detail-item .v{font-size:14px;color:var(--negro);}
+  .sig-preview{border:1px solid var(--gris-borde);border-radius:8px;background:#fbfcfb;max-width:280px;margin-top:6px;}
+  .status-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--gris-borde);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--negro);color:#fff;padding:12px 20px;border-radius:8px;font-size:13.5px;font-weight:600;
+    opacity:0;transition:all .25s ease;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .footer-note{text-align:center;font-size:11.5px;color:var(--gris-txt);margin-top:30px;padding-top:16px;border-top:1px solid var(--gris-borde);}
+
+  /* ===== Formato imprimible (facsímil exacto del formato físico) ===== */
+  #printArea{display:none;}
+  .pf{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:13.5px;max-width:800px;margin:0 auto;}
+
+  /* --- Header genérico --- */
+  .pf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+  .pf-header img{height:56px;}
+  .pf-doccode{font-size:12px;font-weight:700;}
+  .pf-ruc{font-size:11px;font-weight:700;margin-top:4px;}
+  .pf-header-inline{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+  .pf-header-inline img{height:56px;}
+  .pf-header-inline .pf-doccode{font-size:12px;font-weight:700;}
+
+  /* --- Estilo "Vacaciones" (facsímil exacto) --- */
+  .pf-box{border:2px solid #111;}
+  .pf-title{text-align:center;font-size:26px;font-weight:700;margin:0;padding:14px 12px 2px;}
+  .pf-subtitle{text-align:center;font-size:13px;font-weight:700;margin-bottom:16px;padding:0 10px;}
+  .pf-section{background:#fff;color:#111;font-weight:700;font-size:17px;padding:9px 10px;text-align:center;border-top:1.6px solid #111;border-bottom:3px double #111;}
+  table.pf-table{width:100%;border-collapse:collapse;margin-bottom:0;}
+  table.pf-table td{border:1px solid #111;padding:10px 10px;font-size:13px;vertical-align:top;}
+  table.pf-table td.lbl{background:#bfbfbf;font-weight:700;width:200px;}
+  .pf-autorizaciones{min-height:230px;border:1px solid #111;border-top:none;}
+  .pf-firmas-box{display:flex;justify-content:space-between;margin-top:-14px;padding:0 4px 4px;gap:14px;}
+  .pf-firmas-box > div{background:#a6a6a6;font-weight:700;font-size:12px;text-align:center;padding:9px 10px;border:1px solid #111;}
+
+  /* --- Estilo "Adelanto / Gratificación / Préstamo" (ANEXO PER 003RRHH-2, facsímil exacto) --- */
+  .pf-title-bar{background:#fff;color:#111;text-align:center;font-weight:700;font-size:15px;padding:16px 16px;line-height:1.4;border-bottom:1.6px solid #111;text-transform:uppercase;}
+  .pf-parrafo{font-size:12.5px;margin:0;text-align:justify;padding:16px 16px 8px;line-height:1.5;}
+  .pf-campos{padding:8px 16px 18px;}
+  .pf-campos .fila{display:flex;align-items:baseline;gap:6px;margin-bottom:22px;font-size:13px;}
+  .pf-campos .fila b{white-space:nowrap;text-transform:uppercase;font-weight:700;}
+  .pf-campos .fila b::after{content:" :";}
+  .pf-campos .fila span{border-bottom:1px solid #333;flex:1;padding-bottom:2px;min-height:15px;}
+  .pf-caja-cols{display:flex;padding:0 16px 18px;gap:40px;}
+  .pf-caja-grid{flex:1;display:flex;flex-direction:column;gap:14px;}
+  .pf-caja{border:1px solid #333;padding:7px 10px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .pf-cuotas{flex:1;display:flex;flex-direction:column;gap:14px;justify-content:flex-start;}
+  .pf-cuotas .pf-caja{justify-content:space-between;}
+  .pf-checkbox{width:24px;height:22px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
+  table.pf-mes-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;}
+  .pf-mes-wrap{padding:0 16px 18px;}
+  table.pf-mes-table td{padding:7px 6px;vertical-align:middle;}
+  table.pf-mes-table td.mes-side{font-weight:700;font-size:11px;text-align:center;text-transform:uppercase;border-right:1px solid #333;width:28px;letter-spacing:.3px;writing-mode:vertical-rl;transform:rotate(180deg);padding:8px 4px;}
+  table.pf-mes-table td.mes-lbl{white-space:nowrap;padding-right:10px;}
+  table.pf-mes-table td.mes-box{border:1px solid #333;width:56px;height:20px;text-align:center;font-size:11px;}
+  .pf-legal{border:1px solid #333;padding:14px 16px;font-size:11.5px;margin:0 16px 20px;text-align:justify;line-height:1.5;}
+
+  /* --- Firmas (líneas simples) --- */
+  .pf-firmas{display:flex;justify-content:space-between;gap:20px;text-align:center;font-size:11.5px;font-weight:700;padding:0 16px 22px;}
+  .pf-firmas > div{flex:1;display:flex;flex-direction:column;align-items:center;}
+  .pf-firma-slot{height:52px;width:100%;}
+  .pf-firma-line{border-top:1.4px solid #222;width:92%;margin-top:2px;padding-top:6px;text-transform:uppercase;}
+  .pf-footer{text-align:center;font-size:10px;color:#555;margin-top:16px;padding-top:5px;}
+
+  /* --- Estilo "Cambio de banco": simple, sin recuadro (facsímil exacto) --- */
+  .pf-plain-line{font-size:13px;margin:5px 0;}
+  .pf-line-fill{border-bottom:1px solid #222;display:inline-block;min-width:190px;text-align:center;}
+  .pf-title-plain{text-align:center;font-size:16px;font-weight:700;margin:26px 0 20px;text-transform:uppercase;}
+  .pf-bank-th{border:1px solid #111;padding:8px 10px;font-size:13px;font-weight:700;text-align:center;}
+
+  /* --- Estilo "Declaración Jurada - Préstamo por Vivienda" (facsímil exacto) --- */
+  .pf-dj{font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.5;}
+  .dj-title{text-align:center;font-size:14px;font-weight:700;line-height:1.5;margin-bottom:18px;}
+  .dj-parrafo{text-align:justify;margin:0 0 14px;}
+  .dj-list{margin:0 0 14px;padding-left:22px;}
+  .dj-list li{text-align:justify;margin-bottom:12px;padding-left:4px;}
+  .dj-firma-row{display:flex;justify-content:space-between;align-items:flex-end;margin:34px 0 46px;gap:30px;}
+  .dj-huella{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .dj-huella-box{width:110px;height:130px;border:1.4px solid #111;}
+  .dj-huella-label{font-size:13px;}
+  .dj-fecha-firma{text-align:center;min-width:260px;}
+  .dj-fecha{font-style:italic;font-weight:700;margin-bottom:44px;}
+  .dj-firma-slot{height:0;}
+  .dj-firma-line{border-top:1.4px solid #111;padding-top:6px;font-size:12.5px;}
+  .dj-footer{display:flex;justify-content:space-between;gap:20px;font-size:10px;color:var(--verde-txt,#0d6b34);border-top:1px solid #ccc;padding-top:10px;margin-top:10px;line-height:1.6;}
+  .dj-footer b{color:#0d6b34;}
+  .dj-footer div:last-child{color:#333;}
+  .dj-footer div:last-child b{color:#0d6b34;}
+
+  /* --- Anexo fotográfico (evidencias adjuntas) --- */
+  .pf-anexo{font-family:Arial,Helvetica,sans-serif;}
+  .anexo-title{font-size:16px;font-weight:700;margin-bottom:2px;}
+  .anexo-sub{font-size:11.5px;color:#555;margin-bottom:16px;}
+  .anexo-grid{display:flex;flex-wrap:wrap;gap:14px;}
+  .anexo-item{width:calc(50% - 7px);border:1px solid #ccc;border-radius:4px;overflow:hidden;page-break-inside:avoid;}
+  .anexo-item img{width:100%;min-height:160px;display:block;max-height:320px;object-fit:contain;background:#f5f5f5;}
+  .anexo-cap{font-size:10.5px;color:#555;padding:5px 8px;border-top:1px solid #eee;word-break:break-all;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block;position:absolute;top:0;left:0;width:100%;}
+    @page{margin:14mm;}
+  }
+
+  @media(max-width:640px){
+    .form-grid{grid-template-columns:1fr;}
+    .detail-grid{grid-template-columns:1fr;}
+    .topbar{padding:12px;}
+    .brand img{height:34px;}
+    .brand-text .title{font-size:14.5px;}
+    .tab-btn{padding:8px 12px;font-size:13px;}
+  }
+</style>
+<!-- Firebase (Firestore): solo se usa si completas firebaseConfig más abajo, en el bloque de JavaScript principal.
+     Si no configuras Firebase, estas librerías simplemente no se usan y el portal sigue
+     funcionando con almacenamiento local (ver guía de despliegue). -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <img src="data:image/webp;base64,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" alt="La Calera">
+    <div class="brand-text">
+      <span class="eyebrow">Gerencia Central de Administración y Finanzas</span>
+      <span class="title">Portal de Trámites</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="colaborador">Colaborador</button>
+    <button class="tab-btn" data-tab="admin">Panel RRHH</button>
+  </div>
+</div>
+
+<div id="modeBanner" style="display:none;background:var(--ambar-bg);color:var(--ambar);font-size:13px;font-weight:600;text-align:center;padding:9px 16px;"></div>
+
+<div class="app">
+
+  <!-- ============ VISTA COLABORADOR ============ -->
+  <div class="view active" id="view-colaborador">
+
+    <div class="card" id="card-buscar">
+      <h2>¿Quién eres?</h2>
+      <p class="subtitle">Ingresa tu N° de DNI (8 dígitos) para autocompletar tus datos.</p>
+      <div class="search-row">
+        <input type="text" id="buscarInput" inputmode="numeric" maxlength="8" placeholder="Escribe tu N° de DNI (8 dígitos)...">
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <div class="card" id="card-empleado" style="display:none;">
+      <div class="empleado-card">
+        <div class="empleado-info">
+          <div class="nombre" id="empNombre"></div>
+          <div class="cargo" id="empCargo"></div>
+          <div class="empleado-grid">
+            <div><b>DNI:</b> <span id="empDNI"></span></div>
+            <div><b>Código:</b> <span id="empCodigo"></span></div>
+            <div><b>Área:</b> <span id="empArea"></span></div>
+            <div><b>Fecha ingreso:</b> <span id="empIngreso"></span></div>
+          </div>
+        </div>
+        <button class="link-btn" id="btnCambiarEmpleado">No soy yo, cambiar</button>
+      </div>
+    </div>
+
+    <div class="card" id="card-tramite" style="display:none;">
+      <h2>¿Qué trámite deseas realizar?</h2>
+      <p class="subtitle">Selecciona una opción para continuar.</p>
+      <div class="tramite-grid" id="tramiteGrid"></div>
+    </div>
+
+    <div class="card" id="card-form" style="display:none;">
+      <h2 id="formTitle"></h2>
+      <p class="subtitle" id="formSubtitle"></p>
+      <form id="dynForm"></form>
+    </div>
+
+    <div class="card" id="card-confirm" style="display:none;">
+      <div class="confirm-box">
+        <div class="check">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h2>Solicitud enviada</h2>
+        <p class="subtitle">Tu trámite fue registrado y será revisado por Gestión Humana.</p>
+        <div class="folio" id="folioText"></div>
+        <div style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnDescargarPDF">Descargar / Imprimir para firmar</button>
+          <button class="btn btn-ghost" id="btnNuevaSolicitud">Registrar otra solicitud</button>
+        </div>
+        <p class="subtitle" style="margin-top:14px;">Se abrirá la vista de impresión: ahí puedes imprimir en papel o elegir "Guardar como PDF".</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ VISTA ADMIN ============ -->
+  <div class="view" id="view-admin">
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="card">
+      <div class="filters-row">
+        <input type="text" id="fBuscar" placeholder="Buscar por nombre, DNI o folio...">
+        <select id="fTipo"><option value="">Todos los trámites</option></select>
+        <select id="fEstado">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btnExportCSV">Exportar CSV</button>
+      </div>
+      <div id="tablaWrap"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="pill" id="modalPill"></div>
+        <h2 style="margin-top:8px;" id="modalTitle"></h2>
+      </div>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="printArea"></div>
+
+<script>
+const EMPLEADOS = [{"codigo": 7622, "DNI": "40264550", "Nombres": "Veronica Fritzie", "apPat": "Salas", "apMat": "Vargas", "cargo": "ESPECIALISTA TRIBUTARIO", "area": "Contabilidad", "ingreso": "2022-10-03"}, {"codigo": 12595, "DNI": "77465954", "Nombres": "Thalia Luzbet", "apPat": "Tello", "apMat": "Sarmiento", "cargo": "ASISTENTE DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2024-04-19"}, {"codigo": 13911, "DNI": "47552461", "Nombres": "Yajaira", "apPat": "Flores", "apMat": "Levano", "cargo": "ANALISTA DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2025-01-07"}, {"codigo": 14009, "DNI": "47830413", "Nombres": "Karina Marysol", "apPat": "Huamani", "apMat": "Mamani", "cargo": "ANALISTA DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2025-01-17"}, {"codigo": 14010, "DNI": "77179582", "Nombres": "Jordan Martin", "apPat": "Chirre", "apMat": "De la Cruz", "cargo": "ASISTENTE DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2025-01-20"}, {"codigo": 14405, "DNI": "72864010", "Nombres": "Gabriela", "apPat": "Vivanco", "apMat": "Valenzuela", "cargo": "ESPECIALISTA CONTABLE", "area": "Contabilidad", "ingreso": "2025-04-21"}, {"codigo": 14953, "DNI": "70486801", "Nombres": "Anthony Jesus", "apPat": "Noriega", "apMat": "Leon", "cargo": "ASISTENTE DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2026-07-06"}, {"codigo": 15010, "DNI": "72937029", "Nombres": "Lisset Analu", "apPat": "Paz", "apMat": "Escobar", "cargo": "ASISTENTE DE CONTROL DOCUMENTARIO", "area": "Contabilidad", "ingreso": "2025-09-23"}, {"codigo": 15260, "DNI": "70321983", "Nombres": "Enrique Jesus Antonio", "apPat": "Martinez", "apMat": "Espinoza", "cargo": "ASISTENTE DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2025-11-06"}, {"codigo": 15338, "DNI": "76661417", "Nombres": "Jose Braulio", "apPat": "Rodriguez", "apMat": "Cordova", "cargo": "AUXILIAR CONTABLE", "area": "Contabilidad", "ingreso": "2025-12-11"}, {"codigo": 16036, "DNI": "42149324", "Nombres": "Eveline Rosse", "apPat": "Guevara", "apMat": "Maldonado", "cargo": "JEFE DE CONTABILIDAD", "area": "Contabilidad", "ingreso": "2026-07-01"}, {"codigo": 16057, "DNI": "75503971", "Nombres": "Maria Fernanda", "apPat": "Chavez", "apMat": "Cruz", "cargo": "AUXILIAR CONTABLE", "area": "Contabilidad", "ingreso": "2026-07-06"}, {"codigo": 10572, "DNI": "42987923", "Nombres": "Monica Anahi", "apPat": "Martinez", "apMat": "Ontaneda", "cargo": "ASISTENTE DE GERENCIA", "area": "Dirección de Administración y Finanzas", "ingreso": "2023-07-24"}, {"codigo": 261, "DNI": "47849118", "Nombres": "Mauro Jose", "apPat": "Obispo", "apMat": "Rodriguez", "cargo": "ESPECIALISTA DE CONTROL DE GESTION", "area": "Inteligencia de Negocios estrategia de control de gestión ", "ingreso": "2021-10-16"}, {"codigo": 9616, "DNI": "46705320", "Nombres": "Javier Rodrigo Manuel", "apPat": "Sarmiento", "apMat": "Lopez", "cargo": "JEFE DE CONTROL DE GESTION", "area": "Inteligencia de Negocios", "ingreso": "2023-04-10"}, {"codigo": 4511, "DNI": "47514440", "Nombres": "Linda Lea", "apPat": "Paucar", "apMat": "Chuco", "cargo": "JEFE DE PLANEAMIENTO FINANCIERO", "area": "Planeamiento Financiero", "ingreso": "2021-10-01"}, {"codigo": 10812, "DNI": "74251369", "Nombres": "Carlos Alberto", "apPat": "Jimenez", "apMat": "Gutierrez", "cargo": "ANALISTA DE COSTOS Y PRESUPUESTOS", "area": "Planeamiento Financiero", "ingreso": "2023-08-16"}, {"codigo": 13235, "DNI": "48350325", "Nombres": "Einer Enrique", "apPat": "Soles", "apMat": "Mendoza", "cargo": "ANALISTA DE COSTOS Y PRESUPUESTOS", "area": "Planeamiento Financiero", "ingreso": "2024-08-26"}, {"codigo": 14686, "DNI": "75139667", "Nombres": "Jose Jefferson", "apPat": "Hernandez", "apMat": "Cueva", "cargo": "PRACTICANTE DE PLANEAMIENTO FINANCIERO", "area": "Planeamiento Financiero", "ingreso": "2025-06-24"}, {"codigo": 15931, "DNI": "72733502", "Nombres": "David Israel", "apPat": "Sanchez", "apMat": "Chuchon", "cargo": "ANALISTA DE PLANEAMIENTO FINANCIERO", "area": "Planeamiento Financiero", "ingreso": "2026-06-09"}, {"codigo": 16186, "DNI": "42779709", "Nombres": "Edgar Enrique", "apPat": "Elias", "apMat": "Navarro", "cargo": "MENSAJERO MOTORIZADO", "area": "Riesgos Crediticios", "ingreso": "2026-08-03"}, {"codigo": 2237, "DNI": "21826536", "Nombres": "Antonio", "apPat": "Chaccere", "apMat": "Callampe", "cargo": "AGENTE DE SEGURIDAD", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2012-04-01"}, {"codigo": 2239, "DNI": "21814327", "Nombres": "Carlos Jacinto", "apPat": "Muñoz", "apMat": "Tasayco", "cargo": "AGENTE DE SEGURIDAD", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2013-03-04"}, {"codigo": 3804, "DNI": "21817023", "Nombres": "Exequiel Domingo", "apPat": "Blanco", "apMat": "Martinez", "cargo": "OPERARIO DE BALANZA", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "1984-05-21"}, {"codigo": 4367, "DNI": "9766254", "Nombres": "Moises David", "apPat": "Castillo", "apMat": "Franco", "cargo": "SUPERVISOR DE SEGURIDAD PATRIMONIAL", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2014-10-01"}, {"codigo": 5776, "DNI": "44136210", "Nombres": "Maribel Dicideria", "apPat": "Flores", "apMat": "Del Pino", "cargo": "OPERARIO DE GRIFO", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2012-07-01"}, {"codigo": 10131, "DNI": "76776486", "Nombres": "Kerwin Rony", "apPat": "Aquije", "apMat": "Saravia", "cargo": "OPERARIO DE BALANZA", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2024-05-01"}, {"codigo": 12787, "DNI": "75614810", "Nombres": "Antony Jesus", "apPat": "Bautista", "apMat": "Garay", "cargo": "OPERARIO DE BALANZA", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2024-06-01"}, {"codigo": 13143, "DNI": "71879555", "Nombres": "Jesus", "apPat": "Rojas", "apMat": "Chumbiauca", "cargo": "OPERARIO DE BALANZA", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2024-08-07"}, {"codigo": 15318, "DNI": "44867695", "Nombres": "Jaime Manuel", "apPat": "Pauyac", "apMat": "Peña", "cargo": "AGENTE DE SEGURIDAD", "area": "Seguridad y Control Patrimonial Chincha", "ingreso": "2025-12-01"}, {"codigo": 1857, "DNI": "44665015", "Nombres": "Nilda Saida", "apPat": "Rafael", "apMat": "Rosales", "cargo": "ASISTENTE ADMINISTRATIVO", "area": "Seguridad y Control Patrimonial Lima", "ingreso": "2020-07-23"}, {"codigo": 12581, "DNI": "15739040", "Nombres": "Jose Antonio", "apPat": "Rodriguez", "apMat": "La Rosa", "cargo": "SUPERVISOR DE SEGURIDAD PATRIMONIAL", "area": "Seguridad y Control Patrimonial Lima", "ingreso": "2024-04-15"}, {"codigo": 15681, "DNI": "43347067", "Nombres": "Eric Alejandro", "apPat": "Valdez", "apMat": "Joo", "cargo": "AUDITOR DE CAMPO", "area": "Seguridad y Control Patrimonial Lima", "ingreso": "2026-04-06"}, {"codigo": 15730, "DNI": "71406873", "Nombres": "Lesli Rosario", "apPat": "Antonio", "apMat": "Paucar", "cargo": "AUDITOR DE CAMPO", "area": "Seguridad y Control Patrimonial Lima", "ingreso": "2026-04-21"}, {"codigo": 16158, "DNI": "10268514", "Nombres": "Barry Patrick", "apPat": "Lopez", "apMat": "Perez", "cargo": "JEFE DE SEGURIDAD Y CONTROL PATRIMONIAL", "area": "Seguridad y Control Patrimonial Lima", "ingreso": "2026-07-24"}, {"codigo": 431, "DNI": "47204638", "Nombres": "Alfredo Arturo", "apPat": "Cordova", "apMat": "Gutierrez", "cargo": "COORDINADOR DE SOLUCIONES DIGITALES", "area": "Tecnologías de la Información", "ingreso": "2018-12-03"}, {"codigo": 532, "DNI": "74039075", "Nombres": "Raul Alejandro", "apPat": "Morales", "apMat": "Diaz", "cargo": "COORDINADOR DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2019-06-14"}, {"codigo": 716, "DNI": "71065472", "Nombres": "Alex Ivan", "apPat": "Talledo", "apMat": "Rondoy", "cargo": "ADMINISTRADOR DE PLATAFORMAS TI", "area": "Tecnologías de la Información", "ingreso": "2019-12-18"}, {"codigo": 1788, "DNI": "70133684", "Nombres": "Jhon Kevin", "apPat": "Chico", "apMat": "Angulo", "cargo": "ASISTENTE DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2020-07-01"}, {"codigo": 2359, "DNI": "47393984", "Nombres": "Rovinson Eduardo", "apPat": "Quispe", "apMat": "Ijuma", "cargo": "ADMINISTRADOR DE CIBERSEGURIDAD TI", "area": "Tecnologías de la Información", "ingreso": "2023-09-04"}, {"codigo": 2889, "DNI": "71479654", "Nombres": "Kevin Michel", "apPat": "Aburto", "apMat": "Cordova", "cargo": "ANALISTA PROGRAMADOR TI", "area": "Tecnologías de la Información", "ingreso": "2018-06-01"}, {"codigo": 3410, "DNI": "71297565", "Nombres": "Luis Eusebio", "apPat": "Navarro", "apMat": "Saravia", "cargo": "SUPERVISOR DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2021-04-01"}, {"codigo": 3693, "DNI": "8158393", "Nombres": "Ivan Adrian", "apPat": "Cosco", "apMat": "Ashtu", "cargo": "ANALISTA FUNCIONAL SAP", "area": "Tecnologías de la Información", "ingreso": "2021-05-21"}, {"codigo": 4769, "DNI": "47868277", "Nombres": "Juan Luis", "apPat": "Unocc", "apMat": "Leon", "cargo": "JEFE DE DATA Y ANALYTICS", "area": "Tecnologías de la Información", "ingreso": "2021-11-08"}, {"codigo": 5935, "DNI": "76732897", "Nombres": "Raul Jesus", "apPat": "Ortega", "apMat": "Carhuaricra", "cargo": "ESPECIALISTA DE INGENIERIA DE DATOS", "area": "Tecnologías de la Información", "ingreso": "2023-03-01"}, {"codigo": 8648, "DNI": "71992357", "Nombres": "Viviana Janet", "apPat": "Barrera", "apMat": "Pomajulca", "cargo": "ANALISTA DE INTELIGENCIA DE NEGOCIOS", "area": "Tecnologías de la Información", "ingreso": "2025-11-17"}, {"codigo": 9638, "DNI": "70405055", "Nombres": "Ruben Daniel", "apPat": "Fernandez", "apMat": "Quispe", "cargo": "ASISTENTE DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2023-04-14"}, {"codigo": 10708, "DNI": "77072553", "Nombres": "Oscar Ernesto", "apPat": "Vilca", "apMat": "Rivera", "cargo": "ANALISTA FUNCIONAL SAP", "area": "Tecnologías de la Información", "ingreso": "2025-12-22"}, {"codigo": 10989, "DNI": "70301611", "Nombres": "Cesar Junior", "apPat": "Rocha", "apMat": "Rojas", "cargo": "JEFE DE OPERACIONES E INFRAESTRUCTURA TI", "area": "Tecnologías de la Información", "ingreso": "2023-09-08"}, {"codigo": 11500, "DNI": "47490390", "Nombres": "Rosa Stephanie", "apPat": "Palomino", "apMat": "Levano", "cargo": "COORDINADOR SAP", "area": "Tecnologías de la Información", "ingreso": "2023-11-02"}, {"codigo": 14136, "DNI": "75467025", "Nombres": "Mirtha Daniela", "apPat": "Morales", "apMat": "Morales", "cargo": "ANALISTA FUNCIONAL SAP", "area": "Tecnologías de la Información", "ingreso": "2025-02-17"}, {"codigo": 14182, "DNI": "71386172", "Nombres": "Paola Carito", "apPat": "Andrade", "apMat": "Castillo", "cargo": "ASISTENTE DE INTELIGENCIA DE NEGOCIOS", "area": "Tecnologías de la Información", "ingreso": "2025-03-05"}, {"codigo": 14508, "DNI": "71263626", "Nombres": "Manuel Angel", "apPat": "Vargas", "apMat": "Collazo", "cargo": "ASISTENTE DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2025-05-13"}, {"codigo": 14604, "DNI": "44548343", "Nombres": "Maykol Darlien", "apPat": "Manosalva", "apMat": "Collantes", "cargo": "ANALISTA DE AUTOMATIZ Y DIGITALIZACION", "area": "Tecnologías de la Información", "ingreso": "2025-06-01"}, {"codigo": 15038, "DNI": "72554124", "Nombres": "Eddy David", "apPat": "Mendoza", "apMat": "Yamunaque", "cargo": "ANALISTA DE DESARROLLO Y SOLUCIONES DIG", "area": "Tecnologías de la Información", "ingreso": "2025-10-01"}, {"codigo": 15279, "DNI": "74308121", "Nombres": "Paulo César", "apPat": "Valdivia", "apMat": "Flores", "cargo": "ASISTENTE DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2025-11-11"}, {"codigo": 15299, "DNI": "72721906", "Nombres": "Rodrigo Julio", "apPat": "Santos", "apMat": "Zegarra", "cargo": "ANALISTA DE AUTOMATIZ Y DIGITALIZACION", "area": "Tecnologías de la Información", "ingreso": "2025-11-20"}, {"codigo": 15342, "DNI": "60296788", "Nombres": "Geampier", "apPat": "Merge", "apMat": "Teodoro", "cargo": "ANALISTA DE INTELIGENCIA DE NEGOCIOS", "area": "Tecnologías de la Información", "ingreso": "2025-12-11"}, {"codigo": 15462, "DNI": "73135124", "Nombres": "Mauricio Alejandro", "apPat": "Lopez", "apMat": "Montalvan", "cargo": "INGENIERO DE DATOS", "area": "Tecnologías de la Información", "ingreso": "2026-02-01"}, {"codigo": 15890, "DNI": "60472635", "Nombres": "Sebastian Martin", "apPat": "Lucich", "apMat": "Muñoz", "cargo": "TRAINEE DE TI Y TRANSFORMACION DIGITAL", "area": "Tecnologías de la Información", "ingreso": "2026-06-01"}, {"codigo": 15891, "DNI": "73085438", "Nombres": "Williams Alberto", "apPat": "Ccompi", "apMat": "Guerrero", "cargo": "TRAINEE DE TI Y TRANSFORMACION DIGITAL", "area": "Tecnologías de la Información", "ingreso": "2026-06-01"}, {"codigo": 16116, "DNI": "75424278", "Nombres": "Juan Carlos", "apPat": "Ramos", "apMat": "Calderon", "cargo": "ASISTENTE DE OPERACIONES E INFRAES TI", "area": "Tecnologías de la Información", "ingreso": "2026-07-20"}, {"codigo": 29, "DNI": "10687455", "Nombres": "Jaime Raul", "apPat": "Romero", "apMat": "Julca", "cargo": "SUPERVISOR DE TESORERIA Y FINANZAS", "area": "Tesorería", "ingreso": "2007-08-13"}, {"codigo": 61, "DNI": "10796778", "Nombres": "Milagros Elizabeth", "apPat": "Vargas", "apMat": "Chipana", "cargo": "ASISTENTE DE OPERACIONES BANCARIAS", "area": "Tesorería", "ingreso": "2011-01-01"}, {"codigo": 1884, "DNI": "76079242", "Nombres": "Yandery Carla", "apPat": "Sanchez", "apMat": "Espino", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2022-08-11"}, {"codigo": 3907, "DNI": "43107490", "Nombres": "Carlos Enrique", "apPat": "Cabrera", "apMat": "Espino", "cargo": "ASISTENTE DE TESORERIA", "area": "Tesorería", "ingreso": "2009-03-01"}, {"codigo": 10202, "DNI": "70156051", "Nombres": "Katherine Elizabeth", "apPat": "Barrenechea", "apMat": "Ubillus", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2023-06-01"}, {"codigo": 11091, "DNI": "75467256", "Nombres": "Jilary Ana", "apPat": "Gamarra", "apMat": "Nuñez", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2023-09-18"}, {"codigo": 11517, "DNI": "74035124", "Nombres": "Katty Susy", "apPat": "Tomaylla", "apMat": "Astoray", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2023-11-01"}, {"codigo": 12505, "DNI": "29639058", "Nombres": "Milagros Rocio", "apPat": "Jurado", "apMat": "Villanueva", "cargo": "COORDINADOR DE RIESGO DE CREDITO", "area": "Tesorería", "ingreso": "2024-04-05"}, {"codigo": 14100, "DNI": "71951813", "Nombres": "Ana Maria del Pilar", "apPat": "Custodio", "apMat": "Barrantes", "cargo": "ASISTENTE DE TESORERIA", "area": "Tesorería", "ingreso": "2025-02-10"}, {"codigo": 14135, "DNI": "70268332", "Nombres": "Sebastian Danilo", "apPat": "Velasquez", "apMat": "Quintanilla", "cargo": "ASISTENTE DE TESORERIA", "area": "Tesorería", "ingreso": "2025-02-17"}, {"codigo": 14146, "DNI": "72700892", "Nombres": "Carlos Alonso", "apPat": "Reto", "apMat": "Velasquez", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2025-02-20"}, {"codigo": 14526, "DNI": "74077369", "Nombres": "Andersson Luis", "apPat": "Sanchez", "apMat": "Patricio", "cargo": "GESTOR DE COBRANZAS", "area": "Tesorería", "ingreso": "2025-05-15"}, {"codigo": 14974, "DNI": "42242931", "Nombres": "Giovanna", "apPat": "Robles", "apMat": "Egoavil", "cargo": "JEFE DE TESORERIA", "area": "Tesorería", "ingreso": "2025-09-15"}, {"codigo": 14993, "DNI": "72613059", "Nombres": "Fernando Jesus", "apPat": "Zapata", "apMat": "Diburcio", "cargo": "ASISTENTE DE CUENTAS POR COBRAR", "area": "Tesorería", "ingreso": "2025-09-18"}, {"codigo": 15635, "DNI": "77074419", "Nombres": "Antonio Gabriel", "apPat": "Muñoz", "apMat": "Montes", "cargo": "AUXILIAR DE CONTROL DOCUMENTARIO", "area": "Tesorería", "ingreso": "2026-03-24"}];
+</script>
+<script>
+/* ============================================================
+   Portal de Trámites GAF · La Calera
+   ============================================================ */
+
+/* ---------- Definición de trámites ---------- */
+const TRAMITES = {
+  gratificacion: {
+    nombre: "Adelanto de Gratificación",
+    desc: "Adelanto de gratificación Julio / Diciembre",
+    folioCode: "GRT",
+    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5.5"></circle><path d="M12.5 4.5A5.5 5.5 0 1 1 8 13"></path><path d="M8 15h.01"></path></svg>`,
+    fields: [
+      { id: "gratificacionTipo", label: "Gratificación a adelantar", type: "radio", options: ["Julio", "Diciembre"], req: true, half: true },
+      { id: "monto", label: "Monto a solicitar (S/.)", type: "number", req: true, half: true },
+      { id: "motivo", label: "Motivo de la solicitud", type: "textarea", req: true, half: false },
+    ],
+  },
+  sueldo: {
+    nombre: "Adelanto de Sueldo",
+    desc: "Adelanto de remuneración mensual",
+    folioCode: "SUE",
+    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2"></rect><path d="M2.5 10h19"></path><circle cx="7" cy="14.5" r="1"></circle></svg>`,
+    fields: [
+      { id: "monto", label: "Monto a solicitar (S/.)", type: "number", req: true, half: true },
+      { id: "motivo", label: "Motivo de la solicitud", type: "textarea", req: true, half: false },
+    ],
+  },
+  prestamo: {
+    nombre: "Solicitud de Préstamo",
+    desc: "Préstamo de salud, vivienda u otro",
+    folioCode: "PRE",
+    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12l3 3 5-6"></path><path d="M3 7.5l9-4 9 4-9 4-9-4z"></path><path d="M3 7.5V16c0 1 4 3.5 9 3.5s9-2.5 9-3.5V7.5"></path></svg>`,
+    fields: [
+      { id: "tipoPrestamo", label: "Tipo de préstamo", type: "select", options: ["Salud", "Vivienda", "Otro"], req: true, half: true },
+      { id: "monto", label: "Monto a solicitar (S/.)", type: "number", req: true, half: true },
+      {
+        id: "domicilio",
+        label: "Domicilio actual (para Declaración Jurada)",
+        type: "text",
+        req: true,
+        half: false,
+        placeholder: "Dirección completa, distrito",
+        showIf: { field: "tipoPrestamo", equals: "Vivienda" },
+        hintText: "Se usará para completar tu Declaración Jurada de Préstamo por Vivienda.",
+      },
+      {
+        id: "fotosEvidencia",
+        label: "Fotos / evidencias de sustento",
+        type: "file",
+        req: true,
+        half: false,
+        multiple: true,
+        accept: "image/*",
+        showIf: { field: "tipoPrestamo", in: ["Salud", "Vivienda"] },
+        hintText: "Adjunta fotos o imágenes que sustenten tu solicitud. Se incluirán automáticamente en el formato al descargarlo o imprimirlo.",
+        labelByValue: {
+          Salud: "Fotos / evidencias médicas",
+          Vivienda: "Galería fotográfica de tu vivienda",
+          Otro: "Fotos / evidencias de sustento",
+        },
+        hintByValue: {
+          Salud: "Adjunta boletas, recetas o informes médicos que sustenten tu solicitud. Puedes seleccionar varias fotos a la vez. Se incluirán automáticamente en el formato al descargarlo o imprimirlo.",
+          Vivienda: "Adjunta fotos del estado actual de tu vivienda o de las mejoras a realizar. Puedes seleccionar varias fotos a la vez. Se incluirán automáticamente en el formato, junto con tu Declaración Jurada.",
+          Otro: "Adjunta imágenes que sustenten tu solicitud. Puedes seleccionar varias a la vez. Se incluirán automáticamente en el formato al descargarlo o imprimirlo.",
+        },
+      },
+      { id: "motivo", label: "Motivo / sustento de la solicitud", type: "textarea", req: true, half: false },
+    ],
+  },
+  cambio_cuenta: {
+    nombre: "Cambio de Cuenta",
+    desc: "Cambio de cuenta de haberes y/o CTS",
+    folioCode: "CTA",
+    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"></path><rect x="4" y="10" width="16" height="9" rx="1"></rect><line x1="9" y1="13" x2="9" y2="17"></line><line x1="15" y1="13" x2="15" y2="17"></line></svg>`,
+    fields: [
+      { id: "tipoCambio", label: "El cambio aplica para", type: "radio", options: ["Haberes", "CTS"], req: true, half: true },
+      { id: "banco", label: "Nombre del banco", type: "text", req: true, half: true, placeholder: "Ej. BCP, Interbank, BBVA..." },
+      { id: "numeroCuenta", label: "N° de cuenta", type: "text", req: true, half: true },
+    ],
+  },
+};
+
+/* ---------- Firebase (opcional) ----------
+   Para que el portal guarde los datos en la nube (Firestore) y todos los
+   colaboradores/RRHH compartan la misma bandeja de solicitudes, completa
+   firebaseConfig con los datos de TU proyecto de Firebase (ver guía aparte).
+   Mientras dejes los valores de ejemplo tal cual están, el portal sigue
+   funcionando en "modo local": los datos solo se guardan en este navegador. */
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+  storageBucket: "TU_PROYECTO.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID",
+};
+const FIREBASE_CONFIGURADO = firebaseConfig.apiKey && firebaseConfig.apiKey !== "TU_API_KEY";
+let db = null;
+if (FIREBASE_CONFIGURADO && typeof firebase !== "undefined") {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+  } catch (e) {
+    console.error("No se pudo inicializar Firebase, se usará almacenamiento local.", e);
+    db = null;
+  }
+}
+
+/* ---------- Estado ---------- */
+let empleadoActual = null;
+let tramiteActual = null;
+let solicitudes = [];
+let ultimoFolioId = null;
+
+/* ---------- Utilidades de storage ----------
+   Prioridad: 1) Firestore (si firebaseConfig está completo) — datos
+   compartidos en la nube entre todos los usuarios, en tiempo real.
+   2) window.storage (solo existe dentro del visor de Artifacts de
+   Claude.ai). 3) localStorage — respaldo local para pruebas, los datos
+   quedan solo en este navegador. */
+const CLOUD_STORAGE = typeof window.storage !== "undefined" && window.storage && typeof window.storage.get === "function";
+
+async function storageGetAll(key) {
+  if (CLOUD_STORAGE) {
+    try {
+      const r = await window.storage.get(key, true);
+      return r && r.value ? r.value : null;
+    } catch (e) {
+      return null; // clave aún no existe
+    }
+  }
+  return localStorage.getItem(key);
+}
+async function storageSetAll(key, valueStr) {
+  if (CLOUD_STORAGE) {
+    const r = await window.storage.set(key, valueStr, true);
+    if (!r) throw new Error("window.storage.set devolvió vacío");
+    return;
+  }
+  localStorage.setItem(key, valueStr);
+}
+
+async function cargarSolicitudes() {
+  if (db) {
+    try {
+      const snap = await db.collection("solicitudes").orderBy("fechaSolicitud", "desc").get();
+      solicitudes = snap.docs.map((d) => d.data());
+      return;
+    } catch (e) {
+      console.error("Error cargando desde Firestore", e);
+      solicitudes = [];
+      return;
+    }
+  }
+  try {
+    const raw = await storageGetAll("solicitudes:all");
+    solicitudes = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error("Error cargando solicitudes", e);
+    solicitudes = [];
+  }
+}
+
+/* Guarda UNA solicitud (la nueva o la que cambió de estado). Con Firestore
+   esto escribe solo ese documento — nunca se sobrescriben ni se pierden
+   las demás solicitudes ya guardadas, sin importar cuántas fotos u otros
+   datos tengan. */
+async function guardarSolicitud(registro) {
+  if (db) {
+    try {
+      await db.collection("solicitudes").doc(registro.id).set(registro);
+      return true;
+    } catch (e) {
+      console.error("Error guardando en Firestore", e);
+      return false;
+    }
+  }
+  try {
+    await storageSetAll("solicitudes:all", JSON.stringify(solicitudes));
+    return true;
+  } catch (e) {
+    console.error("Error guardando", e);
+    return false;
+  }
+}
+
+/* Mantiene `solicitudes` sincronizado en tiempo real con Firestore: si
+   otro colaborador o RRHH envía/aprueba/rechaza algo desde otro equipo,
+   se refleja aquí automáticamente sin recargar la página. */
+function suscribirCambiosEnTiempoReal() {
+  if (!db) return;
+  db.collection("solicitudes")
+    .orderBy("fechaSolicitud", "desc")
+    .onSnapshot(
+      (snap) => {
+        solicitudes = snap.docs.map((d) => d.data());
+        if (document.getElementById("view-admin")?.classList.contains("active")) {
+          pintarStats();
+          pintarTabla();
+        }
+      },
+      (e) => console.error("Error en la suscripción en tiempo real", e)
+    );
+}
+
+function pintarBannerModo() {
+  const el = document.getElementById("modeBanner");
+  if (!el) return;
+  if (db || CLOUD_STORAGE) {
+    el.style.display = "none";
+    return;
+  }
+  el.style.display = "block";
+  el.innerHTML = `⚠️ Modo local: no se detectó Firebase ni almacenamiento compartido de Claude, así que las solicitudes se están guardando solo en <b>este navegador</b> (no llegan a otros equipos). Configura firebaseConfig al inicio del script para que RRHH y los colaboradores compartan la misma bandeja desde cualquier equipo.`;
+}
+
+/* ---------- Toast ---------- */
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("view-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "admin") renderAdmin();
+  });
+});
+
+/* ============================================================
+   BÚSQUEDA DE COLABORADOR
+   ============================================================ */
+function nombreCompleto(e) {
+  return `${e.Nombres} ${e.apPat} ${e.apMat}`;
+}
+
+const buscarInput = document.getElementById("buscarInput");
+const searchResults = document.getElementById("searchResults");
+
+buscarInput.addEventListener("input", () => {
+  // Solo se permite escribir números (DNI). Cualquier otro carácter se descarta al instante.
+  const soloNumeros = buscarInput.value.replace(/\D/g, "").slice(0, 8);
+  if (soloNumeros !== buscarInput.value) buscarInput.value = soloNumeros;
+  const raw = soloNumeros;
+
+  // No se muestra absolutamente nada mientras se escribe.
+  // Solo cuando se completan los 8 dígitos se revela (si existe) ese único colaborador —
+  // nunca una lista, nunca datos de otras personas, y nunca por nombre.
+  if (raw.length < 8) {
+    searchResults.classList.remove("show");
+    searchResults.innerHTML = "";
+    return;
+  }
+  const exacto = EMPLEADOS.find((e) => e.DNI === raw);
+  if (!exacto) {
+    searchResults.innerHTML = `<div class="search-item" style="cursor:default;"><span class="meta">No se encontró ningún colaborador con ese DNI.</span></div>`;
+    searchResults.classList.add("show");
+    return;
+  }
+  searchResults.innerHTML = `
+    <div class="search-item" data-idx="${EMPLEADOS.indexOf(exacto)}">
+      <div>
+        <div class="nom">${nombreCompleto(exacto)}</div>
+        <div class="meta">${exacto.cargo} · ${exacto.area}</div>
+      </div>
+      <div class="dni">DNI ${exacto.DNI}</div>
+    </div>`;
+  searchResults.classList.add("show");
+});
+
+searchResults.addEventListener("click", (ev) => {
+  const item = ev.target.closest(".search-item[data-idx]");
+  if (!item) return;
+  const emp = EMPLEADOS[parseInt(item.dataset.idx)];
+  seleccionarEmpleado(emp);
+});
+
+function seleccionarEmpleado(emp) {
+  empleadoActual = emp;
+  document.getElementById("card-buscar").style.display = "none";
+  const card = document.getElementById("card-empleado");
+  card.style.display = "block";
+  document.getElementById("empNombre").textContent = nombreCompleto(emp);
+  document.getElementById("empCargo").textContent = emp.cargo;
+  document.getElementById("empDNI").textContent = emp.DNI;
+  document.getElementById("empCodigo").textContent = emp.codigo;
+  document.getElementById("empArea").textContent = emp.area;
+  document.getElementById("empIngreso").textContent = formatFecha(emp.ingreso);
+
+  document.getElementById("card-tramite").style.display = "block";
+  document.getElementById("card-form").style.display = "none";
+  document.getElementById("card-confirm").style.display = "none";
+  renderTramiteGrid();
+}
+
+document.getElementById("btnCambiarEmpleado").addEventListener("click", () => {
+  empleadoActual = null;
+  tramiteActual = null;
+  document.getElementById("card-buscar").style.display = "block";
+  document.getElementById("card-empleado").style.display = "none";
+  document.getElementById("card-tramite").style.display = "none";
+  document.getElementById("card-form").style.display = "none";
+  buscarInput.value = "";
+  searchResults.classList.remove("show");
+});
+
+function formatFecha(iso) {
+  if (!iso) return "-";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+/* ============================================================
+   SELECTOR DE TRÁMITE
+   ============================================================ */
+function renderTramiteGrid() {
+  const grid = document.getElementById("tramiteGrid");
+  grid.innerHTML = Object.entries(TRAMITES)
+    .map(
+      ([key, t]) => `
+    <button type="button" class="tramite-card" data-key="${key}">
+      <div class="icon">${t.icon}</div>
+      <div class="nom">${t.nombre}</div>
+      <div class="desc">${t.desc}</div>
+    </button>`
+    )
+    .join("");
+  grid.querySelectorAll(".tramite-card").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      grid.querySelectorAll(".tramite-card").forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      seleccionarTramite(btn.dataset.key);
+    });
+  });
+}
+
+function seleccionarTramite(key) {
+  tramiteActual = key;
+  const t = TRAMITES[key];
+  document.getElementById("formTitle").textContent = t.nombre;
+  document.getElementById("formSubtitle").textContent = t.desc + " — verifica tus datos antes de enviar.";
+  renderForm(t);
+  document.getElementById("card-form").style.display = "block";
+  document.getElementById("card-form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ============================================================
+   FORMULARIO DINÁMICO
+   ============================================================ */
+function renderForm(t) {
+  const form = document.getElementById("dynForm");
+  let html = `<div class="form-grid">`;
+
+  t.fields.forEach((f) => {
+    html += `<div class="field ${f.half ? "" : "full"}" data-fieldwrap="${f.id}" ${
+      f.showIf ? `style="display:none;"` : ""
+    }>`;
+    html += `<label for="f_${f.id}" class="field-label">${f.label}${f.req ? "" : " (opcional)"}</label>`;
+
+    if (f.type === "text" || f.type === "number" || f.type === "date") {
+      html += `<input type="${f.type}" id="f_${f.id}" name="${f.id}" ${f.req ? "required" : ""} ${
+        f.readonly ? "readonly" : ""
+      } placeholder="${f.placeholder || ""}">`;
+    } else if (f.type === "file") {
+      html += `<input type="file" id="f_${f.id}" name="${f.id}" ${f.req ? "required" : ""} ${
+        f.multiple ? "multiple" : ""
+      } ${f.accept ? `accept="${f.accept}"` : ""}>`;
+    } else if (f.type === "textarea") {
+      html += `<textarea id="f_${f.id}" name="${f.id}" rows="3" ${f.req ? "required" : ""}></textarea>`;
+    } else if (f.type === "select") {
+      html += `<select id="f_${f.id}" name="${f.id}" ${f.req ? "required" : ""}><option value="">Selecciona...</option>${f.options
+        .map((o) => `<option value="${o}">${o}</option>`)
+        .join("")}</select>`;
+    } else if (f.type === "radio") {
+      html += `<div class="radio-group">${f.options
+        .map(
+          (o, i) =>
+            `<label><input type="radio" name="${f.id}" value="${o}" ${i === 0 ? "" : ""} ${
+              f.req ? "required" : ""
+            }> ${o}</label>`
+        )
+        .join("")}</div>`;
+    }
+    if (f.hintText) html += `<div class="hint field-hint">${f.hintText}</div>`;
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+
+  html += `
+    <div class="checkbox-row">
+      <input type="checkbox" id="f_declaracion" required>
+      <label for="f_declaracion">Declaro que la información consignada es verdadera. Al enviarla, podré descargar el formato ya completado para firmarlo de manera manual y entregarlo a Gestión Humana.</label>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button type="submit" class="btn btn-primary" id="btnEnviarForm">Continuar y generar formato</button>
+      <button type="button" class="btn btn-ghost" id="btnCancelarForm">Cancelar</button>
+    </div>
+  `;
+
+  form.innerHTML = html;
+  wireConditionalFields(t);
+  wireVacacionesAuto(t);
+
+  form.onsubmit = (ev) => {
+    ev.preventDefault();
+    enviarSolicitud(t);
+  };
+  document.getElementById("btnCancelarForm").addEventListener("click", () => {
+    document.getElementById("card-form").style.display = "none";
+    document.querySelectorAll(".tramite-card").forEach((b) => b.classList.remove("selected"));
+  });
+}
+
+function wireConditionalFields(t) {
+  t.fields.forEach((f) => {
+    if (!f.showIf) return;
+    const trigger = document.querySelectorAll(`[name="${f.showIf.field}"]`);
+    const applyState = () => {
+      const checkedRadio = document.querySelector(`[name="${f.showIf.field}"]:checked`);
+      const selectEl = document.querySelector(`select[name="${f.showIf.field}"]`);
+      const val = checkedRadio ? checkedRadio.value : selectEl ? selectEl.value : "";
+      const wrap = document.querySelector(`[data-fieldwrap="${f.id}"]`);
+      if (!wrap) return;
+      const visible = f.showIf.in ? f.showIf.in.includes(val) : val === f.showIf.equals;
+      wrap.style.display = visible ? "block" : "none";
+      const input = wrap.querySelector("input, select, textarea");
+      if (input && f.req) input.required = visible;
+      if (f.labelByValue && f.labelByValue[val]) {
+        const lbl = wrap.querySelector(".field-label");
+        if (lbl) lbl.textContent = f.labelByValue[val] + (f.req ? "" : " (opcional)");
+      }
+      if (f.hintByValue && f.hintByValue[val]) {
+        const hint = wrap.querySelector(".field-hint");
+        if (hint) hint.textContent = f.hintByValue[val];
+      }
+    };
+    trigger.forEach((el) => el.addEventListener("change", applyState));
+    applyState();
+  });
+}
+
+function wireVacacionesAuto(t) {
+  return; // Trámite de Vacaciones deshabilitado
+  const ini = document.getElementById("f_fechaInicio");
+  const fin = document.getElementById("f_fechaFin");
+  if (!ini || !fin) return;
+  function recompute() {
+    if (ini.value && fin.value) {
+      const d1 = new Date(ini.value + "T00:00:00");
+      const d2 = new Date(fin.value + "T00:00:00");
+      const diff = Math.round((d2 - d1) / 86400000) + 1;
+      document.getElementById("f_totalDias").value = diff > 0 ? diff : "";
+      if (diff > 0) {
+        const ret = new Date(d2);
+        ret.setDate(ret.getDate() + 1);
+        document.getElementById("f_fechaRetorno").value = ret.toISOString().slice(0, 10);
+      }
+    }
+  }
+  ini.addEventListener("change", recompute);
+  fin.addEventListener("change", recompute);
+}
+
+/* ============================================================
+   GENERADOR DE FORMATO IMPRIMIBLE (facsímil del papel original)
+   ============================================================ */
+const LOGO_SRC = document.querySelector(".brand img").src;
+const MESES_LARGO = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const MESES_MIN = MESES_LARGO.map((m) => m.toLowerCase());
+
+function fechaLarga(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+function pfHeader(codigoDoc, mostrarRuc, logoHeight) {
+  const conRuc = mostrarRuc !== false;
+  const h = logoHeight || 56;
+  return `<div class="pf-header">
+    <div style="display:flex;flex-direction:column;">
+      <img src="${LOGO_SRC}" alt="La Calera" style="height:${h}px;">
+      ${conRuc ? `<div class="pf-ruc">RUC : 20452614767</div>` : ""}
+    </div>
+    ${codigoDoc ? `<div class="pf-doccode">${codigoDoc}</div>` : "<div></div>"}
+  </div>`;
+}
+function pfFirmas(labels) {
+  return `<div class="pf-firmas">${labels
+    .map((l) => `<div><div class="pf-firma-slot"></div><div class="pf-firma-line">${l}</div></div>`)
+    .join("")}</div>`;
+}
+
+function plantillaVacaciones(s) {
+  const c = s.campos;
+  const adelantoSi = c.adelanto === "Sí";
+  const adelantoTxt = `Adelanto: Si [${adelantoSi ? "X" : "&nbsp;"}]&nbsp;&nbsp;&nbsp;&nbsp;No [${adelantoSi ? "&nbsp;" : "X"}]${
+    adelantoSi ? `&nbsp;&nbsp;(S/. ${c.montoAdelanto || "0"})` : ""
+  }`;
+  return `<div class="pf">
+    <div class="pf-box">
+      <div style="padding:6px 8px 0;">${pfHeader("F/RR-HH")}</div>
+      <div class="pf-title">Solicitud de Vacaciones</div>
+      <div class="pf-subtitle">(D.Leg. N° 713)</div>
+      <div style="display:flex;">
+        <div style="background:#bfbfbf;font-weight:700;border:1px solid #111;padding:5px 8px;width:180px;font-size:11.5px;">Fecha de Emisión</div>
+        <div style="border:1px solid #111;border-left:none;padding:5px 8px;width:180px;font-size:11.5px;">${fechaLarga(s.fechaSolicitud)}</div>
+      </div>
+      <div class="pf-section">Datos del Trabajador</div>
+      <table class="pf-table">
+        <tr><td class="lbl" style="width:150px;">Nº DNI</td><td style="width:160px;">${s.colaborador.dni}</td><td class="lbl" style="width:150px;">Codigo SAP</td><td>${s.colaborador.codigo}</td></tr>
+        <tr><td class="lbl">Apellidos y Nombres</td><td colspan="3">${s.colaborador.nombre}</td></tr>
+        <tr><td class="lbl">Cargo</td><td style="width:160px;">${s.colaborador.cargo}</td><td colspan="2">&nbsp;</td></tr>
+        <tr><td class="lbl">Área</td><td colspan="3">${s.colaborador.area}</td></tr>
+        <tr><td class="lbl">Fecha de Ingreso</td><td colspan="3">${formatFecha(s.colaborador.ingreso)}</td></tr>
+      </table>
+      <div class="pf-section">Información Vacacional</div>
+      <table class="pf-table">
+        <tr><td class="lbl">Fecha de Inicio de Vacaciones</td><td style="width:160px;">${formatFecha(c.fechaInicio)}</td><td>&nbsp;</td></tr>
+        <tr><td class="lbl">Fecha de Termino de Vacaciones</td><td style="width:160px;">${formatFecha(c.fechaFin)}</td><td>&nbsp;</td></tr>
+        <tr><td class="lbl">Total de días del goce vacacional</td><td colspan="2">${c.totalDias}</td></tr>
+        <tr><td class="lbl">Fecha de Retorno</td><td colspan="2">${formatFecha(c.fechaRetorno)}</td></tr>
+        <tr><td class="lbl">Periodo Vacacional</td><td colspan="2">${c.periodo} &nbsp;&nbsp;&nbsp; ${adelantoTxt}</td></tr>
+      </table>
+      <div style="border:1px solid #111;border-top:none;height:13px;"></div>
+      <div class="pf-section">Autorizaciones</div>
+      <div class="pf-autorizaciones"></div>
+      <div class="pf-firmas-box">
+        <div>Firma del trabajador</div>
+        <div>V°.B° Jefe Inmediato</div>
+        <div>V°.B° Gestion Humana</div>
+      </div>
+    </div>
+    <div class="pf-footer">Folio: ${s.id}</div>
+  </div>`;
+}
+
+function plantillaAdelanto(s) {
+  const c = s.campos;
+  const tipo = s.tipo;
+  let cajaMarcada = "";
+  if (tipo === "sueldo") cajaMarcada = "Remuneración";
+  if (tipo === "gratificacion") cajaMarcada = c.gratificacionTipo === "Diciembre" ? "Gratificación Diciembre" : "Gratificación Julio";
+
+  const fechaBase = new Date(s.fechaSolicitud);
+  const mesInicio = (fechaBase.getMonth() + 1) % 12;
+  const nMeses = tipo === "gratificacion" ? 0 : parseInt(c.mesesAdelanto || "0") || 0;
+  const descuento = c.descuentoMensual || "";
+  const mesesMarcados = {};
+  for (let i = 0; i < nMeses && i < 12; i++) {
+    mesesMarcados[(mesInicio + i) % 12] = descuento;
+  }
+  // Grilla tal como el formato físico: 3 columnas x 4 filas (Ene-Abr / May-Ago / Sep-Dic)
+  const filasMeses = [
+    [0, 4, 8],
+    [1, 5, 9],
+    [2, 6, 10],
+    [3, 7, 11],
+  ];
+
+  const motivoTxt = c.motivo || "";
+  const mesesAdelantoTxt = tipo === "gratificacion" ? "" : c.mesesAdelanto || "";
+  const descuentoTxt = tipo === "gratificacion" ? "" : c.descuentoMensual || "";
+
+  return `<div class="pf">
+    ${pfHeader("ANEXO PER 003RRHH-2", false)}
+    <div class="pf-box">
+      <div class="pf-title-bar">SOLICITUD DE ADELANTO DE REMUNERACIONES<br>Y/O GRATIFICACIÓN</div>
+      <div class="pf-parrafo">Por medio de la presente solicito se me adelante de mi remuneración la suma consignada en el pesente formato y se efectúen los descuentos acorde a lo programado.</div>
+      <div class="pf-campos">
+        <div class="fila"><b>CODIGO / DNI</b><span>${s.colaborador.codigo} / ${s.colaborador.dni}</span><b style="margin-left:10px;">F. INGRESO</b><span>${formatFecha(s.colaborador.ingreso)}</span></div>
+        <div class="fila"><b>TRABAJADOR</b><span>${s.colaborador.nombre}</span></div>
+        <div class="fila"><b>AREA</b><span>${s.colaborador.area}</span></div>
+        <div class="fila"><b>MONTO A SOLICITAR</b><span>S/. ${c.monto}</span></div>
+        <div class="fila"><b>MOTIVO</b><span>${motivoTxt}</span></div>
+      </div>
+      <div class="pf-caja-cols">
+        <div class="pf-caja-grid">
+          <div class="pf-caja"><span>Remuneración</span><b>${cajaMarcada === "Remuneración" ? "☒" : "☐"}</b></div>
+          <div class="pf-caja"><span>Gratificación Julio</span><b>${cajaMarcada === "Gratificación Julio" ? "☒" : "☐"}</b></div>
+          <div class="pf-caja"><span>Gratificación Diciembre</span><b>${cajaMarcada === "Gratificación Diciembre" ? "☒" : "☐"}</b></div>
+        </div>
+        <div class="pf-cuotas">
+          <div class="pf-caja"><span>Meses de Adelanto / Cuotas</span><b>${mesesAdelantoTxt}</b></div>
+          <div class="pf-caja"><span>Descuento Mensual</span><b>S/. ${descuentoTxt}</b></div>
+        </div>
+      </div>
+      <div class="pf-mes-wrap"><table class="pf-mes-table">
+        ${filasMeses
+          .map(
+            (fila, i) => `<tr>
+          ${i === 0 ? `<td class="mes-side" rowspan="4">Cantidad a<br>Descontar</td>` : ""}
+          ${fila
+            .map(
+              (idx) =>
+                `<td class="mes-lbl">${MESES_LARGO[idx]}</td><td class="mes-box">${mesesMarcados[idx] !== undefined ? "S/." + mesesMarcados[idx] : ""}</td>`
+            )
+            .join("")}
+        </tr>`
+          )
+          .join("")}
+      </table></div>
+      <div class="pf-legal">En caso de no haber concluido el pago del adelanto que figura en el presente documento, autorizo se realice el descuento respectivo de mis beneficios sociales y demás ingresos que pudieran generarse por finalización de la relación laboral.</div>
+      ${pfFirmas(["FIRMA DEL<br>TRABAJADOR", "FIRMA DEL JEFE DE<br>AREA", "AUTORIZADO POR"])}
+    </div>
+    <div class="pf-footer">Folio: ${s.id}</div>
+  </div>`;
+}
+
+function plantillaCambioCuenta(s) {
+  const c = s.campos;
+  const hoy = new Date(s.fechaSolicitud);
+  return `<div class="pf">
+    <div style="margin-bottom:34px;">${pfHeader("", false, 76)}</div>
+    <div class="pf-title-plain">Constancia de Cambio de Banco</div>
+    <div class="pf-parrafo" style="padding:10px 0 16px;">Yo <b>${s.colaborador.nombre}</b>, identificada con DNI <b>${s.colaborador.dni}</b>, solicito cambio de banco para el depósito de mis haberes que percibo de su representada según detalle siguiente.</div>
+    <table class="pf-table">
+      <tr><td class="pf-bank-th">Nombre del banco</td><td class="pf-bank-th">Nro de cuenta</td></tr>
+      <tr><td style="height:34px;">${c.banco}</td><td>${c.numeroCuenta}</td></tr>
+    </table>
+    <div class="pf-plain-line" style="margin-top:34px;">Chincha, ${hoy.getDate()} de ${MESES_MIN[hoy.getMonth()]} del ${hoy.getFullYear()}.</div>
+    <div class="pf-plain-line" style="margin-top:230px;">Nombre: <span class="pf-line-fill">${s.colaborador.nombre}</span></div>
+    <div class="pf-plain-line">DNI &nbsp;&nbsp;: <span class="pf-line-fill">${s.colaborador.dni}</span></div>
+    <div class="pf-footer">Folio: ${s.id}</div>
+  </div>`;
+}
+
+function plantillaDJVivienda(s) {
+  const c = s.campos;
+  const hoy = new Date(s.fechaSolicitud);
+  return `<div class="pf pf-dj" style="page-break-before:always;">
+    <div style="margin-bottom:26px;">${pfHeader("", false, 62)}</div>
+    <div class="dj-title">DECLARACIÓN JURADA<br>PRESTAMO POR VIVIENDA</div>
+    <div class="dj-parrafo">Yo, <b>${s.colaborador.nombre}</b>, identificado (a) con Documento Nacional de Identidad (DNI) N.º <b>${s.colaborador.dni}</b>, con domicilio en <b>${c.domicilio || ""}</b>, y habiendo iniciado labores el día <b>${formatFecha(s.colaborador.ingreso)}</b>, declaro bajo juramento lo siguiente:</div>
+    <ol class="dj-list">
+      <li>La dirección que señalo líneas arriba es mi domicilio real, actual, efectivo y verdadero, donde tengo vivencia real, física y permanente; en caso de comprobarse falsedad alguna estoy sometiéndome a las sanciones contempladas en el Art. 427° del Código Penal.</li>
+      <li>Me comprometo a presentar las evidencias de las mejoras realizadas en mi vivienda, en un plazo máximo de tres (01) mes, contados a partir de la fecha en que se me otorgue el beneficio.</li>
+      <li>Que estoy en conocimiento y acepto que, de no cumplir con la presentación de dicha evidencia en el plazo establecido, el descuento correspondiente dejará de realizarse en cuotas mensuales y pasará a ser descontado en una única armada del monto total pendiente, en la boleta de pago inmediata posterior al vencimiento del plazo.</li>
+      <li>Que esta declaración se emite de forma voluntaria, en pleno uso de mis facultades, y con conocimiento de las consecuencias que implica su incumplimiento.</li>
+    </ol>
+    <div class="dj-parrafo" style="margin-top:22px;">En fe de lo declarado, firmo la presente</div>
+    <div class="dj-firma-row">
+      <div class="dj-huella">
+        <div class="dj-huella-box"></div>
+        <div class="dj-huella-label">Huella Digital</div>
+      </div>
+      <div class="dj-fecha-firma">
+        <div class="dj-fecha">Chincha, ${hoy.getDate()} de ${MESES_MIN[hoy.getMonth()]} del ${hoy.getFullYear()}</div>
+        <div class="dj-firma-slot"></div>
+        <div class="dj-firma-line">Firma del colaborador</div>
+      </div>
+    </div>
+    <div class="dj-footer">
+      <div>
+        <b>Sede Chincha</b><br>
+        Fundo la Calera s/n Alto Laran<br>
+        Distrito de Alto Laran - Chincha &nbsp;<b>www.lacalera.pe</b>
+      </div>
+      <div style="text-align:right;">
+        <b>Atención al cliente</b><br>
+        atencionalcliente@lacalera.pe (+511)<br>
+        4177300
+      </div>
+    </div>
+  </div>`;
+}
+
+function plantillaAnexoFotos(s) {
+  const fotos = (s.campos.fotosEvidenciaData || []).filter((f) => f && f.url);
+  if (!fotos.length) return "";
+  return `<div class="pf pf-anexo" style="page-break-before:always;">
+    <div style="margin-bottom:22px;">${pfHeader("", false, 56)}</div>
+    <div class="anexo-title">Anexo: Fotos / Evidencias de Sustento</div>
+    <div class="anexo-sub">Solicitud ${s.id} · ${s.colaborador.nombre}</div>
+    <div class="anexo-grid">
+      ${fotos
+        .map(
+          (f) => `<div class="anexo-item"><img src="${f.url}" alt="${f.name}"><div class="anexo-cap">${f.name}</div></div>`
+        )
+        .join("")}
+    </div>
+  </div>`;
+}
+
+function construirPrintable(s) {
+  if (s.tipo === "vacaciones") return plantillaVacaciones(s);
+  if (s.tipo === "cambio_cuenta") return plantillaCambioCuenta(s);
+  if (s.tipo === "prestamo") {
+    let out = plantillaAdelanto(s) + plantillaAnexoFotos(s);
+    if (s.campos.tipoPrestamo === "Vivienda") out += plantillaDJVivienda(s);
+    return out;
+  }
+  return plantillaAdelanto(s);
+}
+
+function imprimirSolicitud(id) {
+  const s = solicitudes.find((x) => x.id === id);
+  if (!s) {
+    toast("No se encontró la solicitud.");
+    return;
+  }
+  document.getElementById("printArea").innerHTML = construirPrintable(s);
+  window.print();
+}
+
+/* ============================================================
+   ENVÍO DE SOLICITUD
+   ============================================================ */
+async function comprimirImagen(file, maxAncho = 1100, calidad = 0.78) {
+  // 1) Siempre obtenemos primero el dataURL original (garantizado, sin canvas de por medio)
+  const dataUrlOriginal = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+  if (!dataUrlOriginal) return null;
+
+  // 2) Intentamos comprimir vía canvas; si algo falla, nos quedamos con el original (nunca se pierde la imagen)
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("decode-fail"));
+      image.src = dataUrlOriginal;
+    });
+    if (!img.width || img.width <= maxAncho) return dataUrlOriginal;
+    const escala = maxAncho / img.width;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * escala));
+    canvas.height = Math.max(1, Math.round(img.height * escala));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const comprimida = canvas.toDataURL("image/jpeg", calidad);
+    return comprimida && comprimida.length > 100 ? comprimida : dataUrlOriginal;
+  } catch (e) {
+    console.error("No se pudo comprimir la imagen, se usará el original", e);
+    return dataUrlOriginal;
+  }
+}
+
+async function enviarSolicitud(t) {
+  const form = document.getElementById("dynForm");
+  const formData = new FormData(form);
+  const campos = {};
+  for (const f of t.fields) {
+    if (f.type === "file") {
+      const files = formData.getAll(f.id).filter((x) => x && x.name && x.size > 0);
+      campos[f.id] = files.map((x) => x.name).join(", ");
+      if (files.length) {
+        const btnPre = document.getElementById("btnEnviarForm");
+        if (btnPre) btnPre.textContent = "Procesando fotos...";
+        const dataUrls = [];
+        for (const file of files) {
+          const url = await comprimirImagen(file);
+          if (url) dataUrls.push({ name: file.name, url });
+        }
+        campos[f.id + "Data"] = dataUrls;
+      } else {
+        campos[f.id + "Data"] = [];
+      }
+    } else {
+      campos[f.id] = formData.get(f.id) || "";
+    }
+  }
+
+  const btn = document.getElementById("btnEnviarForm");
+  btn.disabled = true;
+  btn.textContent = "Generando...";
+
+  const folio = generarFolio(t.folioCode);
+  const registro = {
+    id: folio,
+    tipo: tramiteActual,
+    tipoNombre: t.nombre,
+    fechaSolicitud: new Date().toISOString(),
+    estado: "pendiente",
+    comentarioRRHH: "",
+    colaborador: {
+      codigo: empleadoActual.codigo,
+      dni: empleadoActual.DNI,
+      nombre: nombreCompleto(empleadoActual),
+      cargo: empleadoActual.cargo,
+      area: empleadoActual.area,
+      ingreso: empleadoActual.ingreso,
+    },
+    campos,
+  };
+
+  await cargarSolicitudes();
+  solicitudes.push(registro);
+  const ok = await guardarSolicitud(registro);
+
+  btn.disabled = false;
+  btn.textContent = "Continuar y generar formato";
+
+  if (!ok) {
+    toast("Ocurrió un error al guardar. Revisa la consola del navegador (F12) para más detalle.");
+    return;
+  }
+
+  ultimoFolioId = folio;
+  document.getElementById("card-form").style.display = "none";
+  document.getElementById("card-tramite").style.display = "none";
+  document.getElementById("card-confirm").style.display = "block";
+  document.getElementById("folioText").textContent = folio;
+  document.getElementById("card-confirm").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function generarFolio(code) {
+  const n = Math.floor(1000 + Math.random() * 9000);
+  const d = new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  return `GAF-${code}-${ymd}-${n}`;
+}
+
+document.getElementById("btnNuevaSolicitud").addEventListener("click", () => {
+  document.getElementById("card-confirm").style.display = "none";
+  document.getElementById("card-tramite").style.display = "block";
+  document.querySelectorAll(".tramite-card").forEach((b) => b.classList.remove("selected"));
+  tramiteActual = null;
+});
+document.getElementById("btnDescargarPDF").addEventListener("click", () => {
+  if (ultimoFolioId) imprimirSolicitud(ultimoFolioId);
+});
+
+/* ============================================================
+   PANEL RRHH / ADMIN
+   ============================================================ */
+let filtroEstado = "";
+let filtroTipo = "";
+let filtroTexto = "";
+
+const fTipoSel = document.getElementById("fTipo");
+Object.entries(TRAMITES).forEach(([key, t]) => {
+  const opt = document.createElement("option");
+  opt.value = key;
+  opt.textContent = t.nombre;
+  fTipoSel.appendChild(opt);
+});
+
+document.getElementById("fBuscar").addEventListener("input", (e) => {
+  filtroTexto = e.target.value.toLowerCase();
+  pintarTabla();
+});
+document.getElementById("fTipo").addEventListener("change", (e) => {
+  filtroTipo = e.target.value;
+  pintarTabla();
+});
+document.getElementById("fEstado").addEventListener("change", (e) => {
+  filtroEstado = e.target.value;
+  pintarTabla();
+});
+document.getElementById("btnExportCSV").addEventListener("click", exportarCSV);
+
+async function renderAdmin() {
+  pintarBannerModo();
+  await cargarSolicitudes();
+  pintarStats();
+  pintarTabla();
+}
+
+function pintarStats() {
+  const total = solicitudes.length;
+  const pendientes = solicitudes.filter((s) => s.estado === "pendiente").length;
+  const aprobados = solicitudes.filter((s) => s.estado === "aprobado").length;
+  const rechazados = solicitudes.filter((s) => s.estado === "rechazado").length;
+  const grid = document.getElementById("statGrid");
+  grid.innerHTML = `
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total solicitudes</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--ambar);">${pendientes}</div><div class="lbl">Pendientes</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--verde-txt);">${aprobados}</div><div class="lbl">Aprobados</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--rojo);">${rechazados}</div><div class="lbl">Rechazados</div></div>
+  `;
+}
+
+function solicitudesFiltradas() {
+  return solicitudes
+    .slice()
+    .sort((a, b) => new Date(b.fechaSolicitud) - new Date(a.fechaSolicitud))
+    .filter((s) => (filtroTipo ? s.tipo === filtroTipo : true))
+    .filter((s) => (filtroEstado ? s.estado === filtroEstado : true))
+    .filter((s) => {
+      if (!filtroTexto) return true;
+      const blob = (s.colaborador.nombre + " " + s.colaborador.dni + " " + s.id).toLowerCase();
+      return blob.includes(filtroTexto);
+    });
+}
+
+function pintarTabla() {
+  const rows = solicitudesFiltradas();
+  const wrap = document.getElementById("tablaWrap");
+  if (rows.length === 0) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line></svg>
+        <div>No hay solicitudes que coincidan con los filtros.</div>
+      </div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>Folio</th><th>Fecha</th><th>Colaborador</th><th>Trámite</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(
+            (s) => `
+          <tr data-id="${s.id}">
+            <td style="font-family:monospace;font-size:12px;">${s.id}</td>
+            <td>${new Date(s.fechaSolicitud).toLocaleDateString("es-PE")}</td>
+            <td>${s.colaborador.nombre}<br><span style="color:var(--gris-txt);font-size:12px;">DNI ${s.colaborador.dni}</span></td>
+            <td>${s.tipoNombre}</td>
+            <td><span class="pill pill-${s.estado}">${s.estado}</span></td>
+          </tr>`
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+  wrap.querySelectorAll("tbody tr").forEach((tr) => {
+    tr.addEventListener("click", () => abrirModal(tr.dataset.id));
+  });
+}
+
+/* ---------- Modal detalle ---------- */
+function fieldLabel(tipo, fieldId) {
+  const def = TRAMITES[tipo].fields.find((f) => f.id === fieldId);
+  return def ? def.label : fieldId;
+}
+
+function abrirModal(id) {
+  const s = solicitudes.find((x) => x.id === id);
+  if (!s) return;
+  document.getElementById("modalPill").className = "pill pill-" + s.estado;
+  document.getElementById("modalPill").textContent = s.estado;
+  document.getElementById("modalTitle").textContent = s.tipoNombre + " · " + s.id;
+
+  const camposHtml = Object.entries(s.campos)
+    .filter(([k, v]) => v !== "")
+    .map(
+      ([k, v]) => `
+      <div class="detail-item"><div class="k">${fieldLabel(s.tipo, k)}</div><div class="v">${v}</div></div>`
+    )
+    .join("");
+
+  document.getElementById("modalBody").innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="k">Colaborador</div><div class="v">${s.colaborador.nombre}</div></div>
+      <div class="detail-item"><div class="k">DNI / Código</div><div class="v">${s.colaborador.dni} / ${s.colaborador.codigo}</div></div>
+      <div class="detail-item"><div class="k">Cargo</div><div class="v">${s.colaborador.cargo}</div></div>
+      <div class="detail-item"><div class="k">Área</div><div class="v">${s.colaborador.area}</div></div>
+      <div class="detail-item"><div class="k">Fecha de solicitud</div><div class="v">${new Date(s.fechaSolicitud).toLocaleString("es-PE")}</div></div>
+      <div class="detail-item"><div class="k">Folio</div><div class="v" style="font-family:monospace;">${s.id}</div></div>
+    </div>
+    <div class="detail-grid">${camposHtml}</div>
+    ${
+      s.firma
+        ? `<div class="detail-item"><div class="k">Firma del colaborador</div><img class="sig-preview" src="${s.firma}" alt="firma"></div>`
+        : ""
+    }
+    <div class="field full" style="margin-top:16px;">
+      <label>Comentario de RRHH</label>
+      <textarea id="modalComentario" rows="2" placeholder="Opcional...">${s.comentarioRRHH || ""}</textarea>
+    </div>
+    <div class="status-actions">
+      <button class="btn btn-ok-ghost btn-sm" data-estado="aprobado">Aprobar</button>
+      <button class="btn btn-danger-ghost btn-sm" data-estado="rechazado">Rechazar</button>
+      <button class="btn btn-ghost btn-sm" data-estado="pendiente">Marcar pendiente</button>
+      <button class="btn btn-ghost btn-sm" id="btnModalDescargar" style="margin-left:auto;">Descargar / Imprimir formato</button>
+    </div>
+  `;
+
+  document.getElementById("btnModalDescargar").addEventListener("click", () => imprimirSolicitud(s.id));
+
+  document.querySelectorAll("[data-estado]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      s.estado = btn.dataset.estado;
+      s.comentarioRRHH = document.getElementById("modalComentario").value;
+      await guardarSolicitud(s);
+      toast("Solicitud actualizada: " + s.estado);
+      cerrarModal();
+      pintarStats();
+      pintarTabla();
+    });
+  });
+
+  document.getElementById("modalOverlay").classList.add("show");
+}
+function cerrarModal() {
+  document.getElementById("modalOverlay").classList.remove("show");
+}
+document.getElementById("modalClose").addEventListener("click", cerrarModal);
+document.getElementById("modalOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "modalOverlay") cerrarModal();
+});
+
+/* ---------- Exportar CSV ---------- */
+function exportarCSV() {
+  const rows = solicitudesFiltradas();
+  if (rows.length === 0) {
+    toast("No hay datos para exportar.");
+    return;
+  }
+  const header = ["Folio", "Fecha", "Colaborador", "DNI", "Area", "Tramite", "Estado", "Detalle"];
+  const lines = [header.join(";")];
+  rows.forEach((s) => {
+    const detalle = Object.entries(s.campos)
+      .filter(([k, v]) => v !== "")
+      .map(([k, v]) => `${fieldLabel(s.tipo, k)}: ${v}`)
+      .join(" | ");
+    const line = [
+      s.id,
+      new Date(s.fechaSolicitud).toLocaleString("es-PE"),
+      s.colaborador.nombre,
+      s.colaborador.dni,
+      s.colaborador.area,
+      s.tipoNombre,
+      s.estado,
+      detalle.replace(/;/g, ","),
+    ]
+      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .join(";");
+    lines.push(line);
+  });
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "solicitudes_GAF.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- Init ---------- */
+pintarBannerModo();
+cargarSolicitudes().then(() => {
+  if (document.getElementById("view-admin")?.classList.contains("active")) {
+    pintarStats();
+    pintarTabla();
+  }
+});
+suscribirCambiosEnTiempoReal();
+
+</script>
+</body>
+</html>
